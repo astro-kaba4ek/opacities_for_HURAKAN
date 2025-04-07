@@ -1,0 +1,9 @@
+&config
+
+a_min	= 5q-7	! [cm]
+a_max	= 1q-4	! [cm]
+p		= 3.5
+
+rho_si	= 3.5	! [g cm-3] 
+rho_c	= 2.24	! [g cm-3] 
+/
