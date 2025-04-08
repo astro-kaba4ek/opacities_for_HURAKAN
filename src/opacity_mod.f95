@@ -41,6 +41,7 @@ function mass_coef_arr(p, a_min, a_max, rho_s, a_arr, Q) result(coef)
 
 	real(knd), allocatable	:: coef(:)
 
+
 	na = size(a_arr)
 	nw = size(Q(1,:))
 
@@ -168,8 +169,7 @@ subroutine coef_arr_P_R(kappa, sigma, freq, T_arr, kappa_P, kappa_R)
 
 		const = 2 * h_Pl**2 / c_light**2 / k_B / T_arr(iT)**2
 		und_int = const * freq**4 * (1/(exp(x)-1) + 1/(exp(x)-1)**2)
-		kappa_R(iT) = integr_trap(und_int, freq) / integr_trap(und_int / (kappa), freq) 
-		! kappa_R(iT) = integr_trap(und_int, freq) / integr_trap(und_int / (kappa + sigma), freq) 
+		kappa_R(iT) = integr_trap(und_int, freq) / integr_trap(und_int / (kappa + sigma), freq) 
 
 	end do
 

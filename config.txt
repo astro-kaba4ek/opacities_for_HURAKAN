@@ -6,4 +6,8 @@ p		= 3.5
 
 rho_si	= 3.5	! [g cm-3] 
 rho_c	= 2.24	! [g cm-3] 
+frac_1	= 0.8
+
+sca		= "no"
+
 /

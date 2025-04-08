@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir build res 
 cd src; rm -rf *.mod; cd ..
 cd build &&

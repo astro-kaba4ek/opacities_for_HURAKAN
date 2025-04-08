@@ -37,11 +37,12 @@ subroutine print_section_info(str, start, stop, flag)
 	 
 end subroutine print_section_info
 
-subroutine command_arg_parser(a_min, a_max, p, rho_1, rho_2)
-	real(knd), intent(inout)	:: a_min, a_max, p, rho_1, rho_2
+subroutine command_arg_parser(a_min, a_max, p, rho_1, rho_2, frac_1, sca_flag)
+	real(knd), intent(inout)	:: a_min, a_max, p, rho_1, rho_2, frac_1
+	character(3), intent(inout)	:: sca_flag
 
 	integer						:: i 
-	character(128)				:: arg, a_min_str, a_max_str, p_str, rho_1_str, rho_2_str
+	character(128)				:: arg, a_min_str, a_max_str, p_str, rho_1_str, rho_2_str, frac_1_str
 
 	do i = 1, command_argument_count(), 2
 		call get_command_argument(i, arg)
@@ -60,6 +61,11 @@ subroutine command_arg_parser(a_min, a_max, p, rho_1, rho_2)
 		else if (trim(arg) == '--rho2') then
 			call get_command_argument(i+1, rho_2_str) 
 			read(rho_2_str, *) rho_2
+		else if (trim(arg) == '--frac1') then
+			call get_command_argument(i+1, frac_1_str) 
+			read(frac_1_str, *) frac_1
+		else if (trim(arg) == '--sca') then
+			call get_command_argument(i+1, sca_flag) 
 			! else
 		!     call assert(.false., 'unknown parameter '//trim(arg))
 		end if
@@ -67,17 +73,43 @@ subroutine command_arg_parser(a_min, a_max, p, rho_1, rho_2)
 
 end subroutine command_arg_parser
 
+subroutine print_input_pars(a_min, a_max, p, rho_1, rho_2, frac_1, sca_flag)
+	real(knd), intent(in)		:: a_min, a_max, p, rho_1, rho_2, frac_1
+	character(3), intent(in)	:: sca_flag
 
-subroutine read_input_namelist(file_path, a_min, a_max, p, rho_si, rho_c) 
+	character(40)				:: knd_format, knd_format_str
+
+
+	if (knd == 8) then
+		knd_format = "(' #', 1x, A, 1x, e23.14, 1x, A)"
+		knd_format_str = "(' #', 1x, A, 1x, A23, 1x, A)"
+	else if (knd == 16) then
+		knd_format = "(' #', 1x, A, 1x, e23.14, 1x, A)"
+		knd_format_str = "(' #', 1x, A, 1x, A39, 1x, A)"
+	end if
+
+	write(*, trim(knd_format)) "a_min   =", a_min, "[cm]"
+	write(*, trim(knd_format)) "a_max   =", a_max, "[cm]"
+	write(*, trim(knd_format)) "p       =", p, ""
+	write(*, trim(knd_format)) "rho_si  =", rho_1, "[g cm-3]"
+	write(*, trim(knd_format)) "rho_c   =", rho_2, "[g cm-3]"
+	write(*, trim(knd_format)) "frac_si =", frac_1, ""
+	write(*, trim(knd_format_str)) "sca     =", sca_flag, ""
+	
+end subroutine print_input_pars
+
+
+subroutine read_input_namelist(file_path, a_min, a_max, p, rho_si, rho_c, frac_1, sca) 
 
 	character(128), intent(in)	:: file_path
 
 	integer						:: input_file
 
-	real(knd), intent(out)		:: a_min, a_max, p, rho_si, rho_c
+	real(knd), intent(out)		:: a_min, a_max, p, rho_si, rho_c, frac_1
+	character(3), intent(out)	:: sca
 
 
-	namelist /config/ a_min, a_max, p, rho_si, rho_c
+	namelist /config/ a_min, a_max, p, rho_si, rho_c, frac_1, sca
 
 	input_file = 25
 
@@ -205,6 +237,42 @@ subroutine save_coefs_nu(file_path, rho_s, w_arr, kappa, sigma)
 
 end subroutine save_coefs_nu
 
+subroutine save_coefs_nu_likeHURAKAN(file_path, rho_s, w_arr, kappa, sigma)
+
+	character(128), intent(in)	:: file_path
+	real(knd), intent(in)		:: w_arr(:), kappa(:), sigma(:), rho_s
+
+	character(25)				:: body_format
+	integer						:: output_file, i
+	real(knd), allocatable		:: freq_arr(:)
+
+
+	output_file = 55
+
+	open(output_file, file="../"//trim(file_path))
+
+	if (knd == 8) then
+		body_format = "(3(1x, e23.14))"
+	else if (knd == 16) then
+		body_format = "(3(1x, e39.30))"
+	end if
+
+	write(output_file, *) size(w_arr)
+
+	allocate(freq_arr(size(w_arr)))
+	freq_arr = lambda2nu(w_arr)
+
+	do i = 1, size(w_arr)
+		write(output_file, body_format) freq_arr(i), kappa(i), sigma(i)
+	end do
+
+	close(output_file)
+	deallocate(freq_arr)
+
+end subroutine save_coefs_nu_likeHURAKAN
+
+
+
 subroutine save_coefs_T(file_path, rho_s, T_arr, kappa_P, kappa_R)
 
 	character(128), intent(in)	:: file_path
@@ -245,6 +313,45 @@ subroutine save_coefs_T(file_path, rho_s, T_arr, kappa_P, kappa_R)
 	close(output_file)
 
 end subroutine save_coefs_T
+
+subroutine save_coefs_T_likeHURAKAN(file_path, rho_s, T_arr, kappa_P, kappa_R)
+
+	character(128), intent(in)	:: file_path
+	real(knd), intent(in)		:: T_arr(:), kappa_P(:), kappa_R(:), rho_s
+
+	character(25)				:: body_format
+	integer						:: output_file, i, g2d
+	real(knd), allocatable		:: freq_arr(:)
+
+	g2d = 100
+
+	output_file = 65
+
+	open(output_file, file="../"//trim(file_path))
+
+	if (knd == 8) then
+		body_format = "(4(1x, e23.14))"
+	else if (knd == 16) then
+		body_format = "(4(1x, e39.30))"
+	end if
+
+	
+	write(output_file, "(A)") "#temperature,K      kappaP       kappaR       kappaS"
+	write(output_file, "(A)") "#opacity coefficients are in cm^2 per gram of GAS"
+	write(output_file, "(A)") "#assuming dust-to-gas mass ratio 0.01"
+	write(output_file, *) ""
+	write(output_file, "(A)") "10000"
+	write(output_file, *) ""
+
+	do i = 1, size(T_arr)
+		write(output_file, body_format) T_arr(i), kappa_P(i)/g2d, kappa_R(i)/g2d, 0._knd
+	end do
+
+	close(output_file)
+
+end subroutine save_coefs_T_likeHURAKAN
+
+
 
 
 real(knd) function integr_trap(f0, x0) 
