@@ -12,6 +12,7 @@ real(knd), parameter :: h_Pl	= 6.62607015q-27	!Planck constant           [erg s]
 real(knd), parameter :: SBc		= 2 * PI**5 * k_B**4 / 15 / h_Pl**3 / c_light**2 !Stefan-Boltzmann constant [erg cm-2 s-1 K-4]
 ! = 5.670374419...q-5
 
+integer, parameter	:: crutch_max_lambda = 216
 
 ! real(WP), parameter :: c_light = 2.99792458e10_WP            !Speed of light            [cm s-1]
 ! real(WP), parameter :: hP     = 6.626070040e-27_WP          !Planck constant           [erg s]

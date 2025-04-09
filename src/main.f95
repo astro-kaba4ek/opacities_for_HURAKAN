@@ -53,7 +53,8 @@ end if
 
 file_path = "res/mix.txt"
 ! call save_coefs_nu(file_path, -1._knd, w_arr, kappa_mix, sigma_mix)
-call save_coefs_nu_likeHURAKAN(file_path, -1._knd, w_arr(216::2), kappa_mix(216::2), sigma_mix(216::2))
+! call save_coefs_nu_likeHURAKAN(file_path, -1._knd, w_arr(216::2), kappa_mix(216::2), sigma_mix(216::2))
+call save_coefs_nu_likeHURAKAN(file_path, -1._knd, w_arr(::2), kappa_mix(::2), sigma_mix(::2))
 deallocate(a_arr, Q_abs_asil, Q_sca_asil, Q_abs_gra, Q_sca_gra)
 
 call print_section_info(section_info_str, time_start, time_stop, 1)

@@ -140,6 +140,8 @@ subroutine read_input_table(file_path, na, nw)
 
 	close(input_file)
 
+	nw = nw - crutch_max_lambda + 1
+
 end subroutine read_input_table
 
 
@@ -162,6 +164,8 @@ subroutine read_table_Q(file_path, a_arr, w_arr, Q_abs, Q_sca)
 	read(input_file, *) na
 	read(input_file, *) nw
 
+	nw = nw - crutch_max_lambda + 1
+
 	! allocate(a_arr(na), w_arr(nw), Q_abs(na, nw), Q_sca(na, nw))
 
 	do ia = 1, na
@@ -169,6 +173,10 @@ subroutine read_table_Q(file_path, a_arr, w_arr, Q_abs, Q_sca)
 		read(input_file, *)
 		read(input_file, *) a_arr(ia)
 		read(input_file, *)
+
+		do iw = 1, crutch_max_lambda-1 
+			read(input_file, *)
+		end do
 
 		do iw = 1, nw
 			read(input_file, *) w_arr(iw), Q_abs(ia, iw), Q_sca(ia, iw)
